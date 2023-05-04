@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -39,25 +40,27 @@ func main() {
 		wg.Add(1)
 		go func(address string) {
 			defer wg.Done()
-			proxy := proxy[rand.Intn(len(proxy))]
-			var httpClient *http.Client
-			if strings.Contains(proxy, "http://") {
-				proxyURL, err := url.Parse(proxy)
-				if err != nil {
-					fmt.Println("Proxy URL parsing error:", err)
-					return
-				}
-				httpClient = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyURL)}}
-			} else if strings.Contains(proxy, "https://") {
-				proxyURL, err := url.Parse(proxy)
-				if err != nil {
-					fmt.Println("Proxy URL parsing error:", err)
-					return
-				}
-				httpClient = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyURL)}}
-			} else {
-				httpClient = &http.Client{}
+
+			proxyAddr := proxy[rand.Intn(len(proxy))]
+			proxyURL, err := url.Parse("http://" + proxyAddr)
+			if err != nil {
+				fmt.Println("Proxy URL parsing error:", err)
+				return
 			}
+
+			// Check if the proxy is working
+			dialer := net.Dialer{
+				Timeout:   5 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}
+			conn, err := dialer.Dial("tcp", proxyAddr)
+			if err != nil {
+				fmt.Printf("Proxy %s is not working: %v\n", proxyAddr, err)
+				return
+			}
+			defer conn.Close()
+
+			httpClient := &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyURL)}}
 
 			reqBody := fmt.Sprintf("address=%s", url.QueryEscape(address))
 			req, err := http.NewRequest("POST", "https://api.cascadia.foundation/api/get-faucet", strings.NewReader(reqBody))
@@ -67,7 +70,7 @@ func main() {
 			}
 
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
-			req.Header.Set("User-Agent", userAgents[rand.Intn(len(userAgents))])
+			req.Header.Set("User-Agent", userAgents[3]) //userAgents[rand.Intn(len(userAgents))]
 
 			resp, err := httpClient.Do(req)
 			if err != nil {
@@ -82,7 +85,7 @@ func main() {
 				return
 			}
 
-			fmt.Printf("Response for address %s via proxy %s: %s\n", address, proxy, string(body))
+			fmt.Printf("Response for address %s via proxy %s: %s\n", address, proxyAddr, string(body))
 		}(address)
 	}
 	wg.Wait()
