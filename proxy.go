@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 type Proxy struct {
@@ -66,6 +67,9 @@ func main() {
 
 	// Write the formatted data to the output file
 	for _, p := range proxies {
-		fmt.Fprintf(outfile, "%s:%s\n", p.IP, p.Port)
+		for _, protocol := range p.Protocols {
+			protocol = strings.ToLower(protocol)
+			fmt.Fprintf(outfile, "%s://%s:%s\n", protocol, p.IP, p.Port)
+		}
 	}
 }
