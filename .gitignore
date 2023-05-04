@@ -7,6 +7,8 @@
 *.dll
 *.so
 *.dylib
+proxy.txt
+addresses.txt
 
 # Test binary, built with `go test -c`
 *.test

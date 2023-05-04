@@ -72,4 +72,5 @@ func main() {
 			fmt.Fprintf(outfile, "%s://%s:%s\n", protocol, p.IP, p.Port)
 		}
 	}
+	fmt.Println("'Free_Proxy_List.json' has been parsed successfully")
 }
