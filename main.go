@@ -41,11 +41,18 @@ func main() {
 		go func(address string) {
 			defer wg.Done()
 
-			proxyAddr := proxy[rand.Intn(len(proxy))]
-			proxyURL, err := url.Parse("http://" + proxyAddr)
+			proxyStr := proxy[rand.Intn(len(proxy))]
+			proxyURL, err := url.Parse(proxyStr)
 			if err != nil {
 				fmt.Println("Proxy URL parsing error:", err)
 				return
+			}
+
+			proxyAddr := proxyURL.Host
+			if strings.HasPrefix(proxyStr, "https://") {
+				proxyAddr = strings.TrimPrefix(proxyAddr, "https://")
+			} else if strings.HasPrefix(proxyStr, "http://") {
+				proxyAddr = strings.TrimPrefix(proxyAddr, "http://")
 			}
 
 			// Check if the proxy is working
