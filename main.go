@@ -36,12 +36,14 @@ func main() {
 	}
 
 	var wg sync.WaitGroup
-	for _, address := range addresses {
+	httpClient := &http.Client{} // Create a single instance of httpClient
+
+	for i, address := range addresses {
 		wg.Add(1)
 		go func(address string) {
 			defer wg.Done()
 
-			proxyStr := proxy[rand.Intn(len(proxy))]
+			proxyStr := proxy[i%len(proxy)]
 
 			// Parse the proxy URL
 			var proxyURL *url.URL
@@ -80,8 +82,6 @@ func main() {
 			}
 			defer conn.Close()
 
-			httpClient := &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyURL)}}
-
 			reqBody := fmt.Sprintf("address=%s", url.QueryEscape(address))
 			req, err := http.NewRequest("POST", "https://api.cascadia.foundation/api/get-faucet", strings.NewReader(reqBody))
 			if err != nil {
@@ -92,7 +92,7 @@ func main() {
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
 			req.Header.Set("User-Agent", userAgents[3]) //userAgents[rand.Intn(len(userAgents))]
 
-			resp, err := httpClient.Do(req)
+			resp, err := httpClient.Do(req) // Use the single instance of httpClient
 			if err != nil {
 				fmt.Println("Error while sending the request:", err)
 				return
