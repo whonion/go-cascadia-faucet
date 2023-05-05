@@ -42,17 +42,30 @@ func main() {
 			defer wg.Done()
 
 			proxyStr := proxy[rand.Intn(len(proxy))]
-			proxyURL, err := url.Parse(proxyStr)
-			if err != nil {
-				fmt.Println("Proxy URL parsing error:", err)
-				return
+
+			// Parse the proxy URL
+			var proxyURL *url.URL
+			var err error
+			if strings.HasPrefix(proxyStr, "http://") || strings.HasPrefix(proxyStr, "https://") {
+				proxyURL, err = url.Parse(proxyStr)
+				if err != nil {
+					fmt.Println("Proxy URL parsing error:", err)
+					return
+				}
+			} else {
+				proxyURL, err = url.Parse("http://" + proxyStr)
+				if err != nil {
+					fmt.Println("Proxy URL parsing error:", err)
+					return
+				}
 			}
 
-			proxyAddr := proxyURL.Host
-			if strings.HasPrefix(proxyStr, "https://") {
-				proxyAddr = strings.TrimPrefix(proxyAddr, "https://")
-			} else if strings.HasPrefix(proxyStr, "http://") {
-				proxyAddr = strings.TrimPrefix(proxyAddr, "http://")
+			// Extract the host and port from the URL
+			var proxyHost, proxyPort string
+			if proxyURL.Scheme == "https" || proxyURL.Scheme == "http" {
+				proxyHost, proxyPort, _ = net.SplitHostPort(proxyURL.Host)
+			} else {
+				proxyHost, proxyPort, _ = net.SplitHostPort(proxyStr)
 			}
 
 			// Check if the proxy is working
@@ -60,9 +73,9 @@ func main() {
 				Timeout:   5 * time.Second,
 				KeepAlive: 30 * time.Second,
 			}
-			conn, err := dialer.Dial("tcp", proxyAddr)
+			conn, err := dialer.Dial("tcp", net.JoinHostPort(proxyHost, proxyPort))
 			if err != nil {
-				fmt.Printf("Proxy %s is not working: %v\n", proxyAddr, err)
+				fmt.Printf("Proxy %s is not working: %v\n", proxyStr, err)
 				return
 			}
 			defer conn.Close()
@@ -92,10 +105,11 @@ func main() {
 				return
 			}
 
-			fmt.Printf("Response for address %s via proxy %s: %s\n", address, proxyAddr, string(body))
+			fmt.Printf("Response for address %s via proxy %s: %s\n", address, proxyStr, string(body))
 		}(address)
 	}
 	wg.Wait()
+
 }
 
 func readLines(filename string) ([]string, error) {
