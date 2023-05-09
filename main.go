@@ -12,11 +12,11 @@ import (
 	"strings"
 	"sync"
 	"time"
+
 	"github.com/whonion/go-parse-proxy-geonode"
 )
 
 func main() {
-	GetFreeProxyList()
 	addresses, err := readLines("addresses.txt")
 	if err != nil {
 		fmt.Println("Read address error:", err)
@@ -28,7 +28,7 @@ func main() {
 		fmt.Println("Proxy reading error:", err)
 		return
 	}
-
+	
 	rand.Seed(time.Now().UnixNano()) // Run random number generator
 
 	userAgents, err := readLines("useragents.txt")
