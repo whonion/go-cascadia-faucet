@@ -12,8 +12,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/whonion/go-parse-proxy-geonode"
 )
 
 func main() {
