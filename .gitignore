@@ -7,9 +7,11 @@
 *.dll
 *.so
 *.dylib
+# Private datas
 proxy.txt
 addresses.txt
-
+Free_Proxy_List.json
+/bin/
 # Test binary, built with `go test -c`
 *.test
 

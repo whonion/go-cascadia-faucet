@@ -12,9 +12,11 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"github.com/whonion/go-parse-proxy-geonode"
 )
 
 func main() {
+	GetFreeProxyList()
 	addresses, err := readLines("addresses.txt")
 	if err != nil {
 		fmt.Println("Read address error:", err)
@@ -126,3 +128,4 @@ func readLines(filename string) ([]string, error) {
 	}
 	return lines, scanner.Err()
 }
+func go-parse-proxy-geonode.
