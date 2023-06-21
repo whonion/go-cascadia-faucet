@@ -1,6 +1,6 @@
 # go-cascadia-faucet
 
-[![Go version][go-badge]][go-url] [![go-report][go-report-badge]][go-report-url] [![Lint][lint-badge]][lint-url] [![Test][test-badge]][test-url][![Build][build-badge]][build-url] [![Makefile][makefile-badge]][makefile-url]
+[![Go version][go-badge]][go-url] [![go-report][go-report-badge]][go-report-url] [![Lint][lint-badge]][lint-url] [![Test][test-badge]][test-url] [![Build][build-badge]][build-url] [![Makefile][makefile-badge]][makefile-url]
 
 ```sh
 curl --location --request POST 'https://api.cascadia.foundation/api/get-faucet' \
