@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net"
 	"net/http"
@@ -26,8 +26,8 @@ func main() {
 		fmt.Println("Proxy reading error:", err)
 		return
 	}
-	
-	rand.Seed(time.Now().UnixNano()) // Run random number generator
+
+	rand.New(rand.NewSource(time.Now().UnixNano())) // Create a new random generator
 
 	userAgents, err := readLines("useragents.txt")
 	if err != nil {
@@ -40,10 +40,10 @@ func main() {
 
 	for i, address := range addresses {
 		wg.Add(1)
-		go func(address string) {
+		go func(i int, address string) { // Add the loop variable as an argument
 			defer wg.Done()
-
 			proxyStr := proxy[i%len(proxy)]
+			// Rest of the cod
 
 			// Parse the proxy URL
 			var proxyURL *url.URL
@@ -90,7 +90,7 @@ func main() {
 			}
 
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
-			req.Header.Set("User-Agent", userAgents[3]) //userAgents[rand.Intn(len(userAgents))]
+			req.Header.Set("User-Agent", userAgents[rand.Intn(len(userAgents))])
 
 			resp, err := httpClient.Do(req) // Use the single instance of httpClient
 			if err != nil {
@@ -99,14 +99,14 @@ func main() {
 			}
 
 			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				fmt.Println("Reply Body Read Error:", err)
 				return
 			}
 
 			fmt.Printf("Response for address %s via proxy %s: %s\n", address, proxyStr, string(body))
-		}(address)
+		}(i, address)
 	}
 	wg.Wait()
 
